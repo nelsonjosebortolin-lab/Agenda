@@ -1,0 +1,1476 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <!-- =====================================================
+         MANIFESTO DO APLICATIVO
+         ===================================================== -->
+
+    <link
+        rel="manifest"
+        href="/manifest.json"
+    >
+
+    <meta
+        name="theme-color"
+        content="#1f4e79"
+    >
+
+    <meta
+        name="mobile-web-app-capable"
+        content="yes"
+    >
+
+    <meta
+        name="apple-mobile-web-app-capable"
+        content="yes"
+    >
+
+    <title>Minha Agenda</title>
+
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+
+        body {
+
+            margin: 0;
+            padding: 0;
+
+            background: #f2f4f7;
+
+            font-family: Arial, sans-serif;
+
+            color: #222;
+        }
+
+
+        /* ==================================================
+           CABEÇALHO
+           ================================================== */
+
+        .cabecalho {
+
+            background: #1f4e79;
+
+            color: white;
+
+            padding: 24px 16px;
+
+            text-align: center;
+        }
+
+
+        .cabecalho h1 {
+
+            margin: 0;
+
+            font-size: 34px;
+        }
+
+
+        .cabecalho p {
+
+            margin: 8px 0 0 0;
+
+            font-size: 20px;
+
+            opacity: 0.95;
+        }
+
+
+        /* ==================================================
+           CONTEÚDO
+           ================================================== */
+
+        .conteudo {
+
+            max-width: 700px;
+
+            margin: auto;
+
+            padding: 18px;
+        }
+
+
+        /* ==================================================
+           BOTÕES PRINCIPAIS
+           ================================================== */
+
+        .botoes {
+
+            display: flex;
+
+            gap: 12px;
+
+            margin-bottom: 20px;
+        }
+
+
+        button {
+
+            border: none;
+
+            border-radius: 12px;
+
+            padding: 16px;
+
+            font-size: 19px;
+
+            font-weight: bold;
+
+            cursor: pointer;
+        }
+
+
+        .botao-novo {
+
+            flex: 1;
+
+            background: #198754;
+
+            color: white;
+        }
+
+
+        .botao-atualizar {
+
+            flex: 1;
+
+            background: #1f4e79;
+
+            color: white;
+        }
+
+
+        .botao-novo:active {
+
+            background: #146c43;
+        }
+
+
+        .botao-atualizar:active {
+
+            background: #163a5c;
+        }
+
+
+        /* ==================================================
+           DATAS
+           ================================================== */
+
+        .data-grupo {
+
+            margin-top: 24px;
+        }
+
+
+        .data-titulo {
+
+            font-size: 22px;
+
+            font-weight: bold;
+
+            color: #1f4e79;
+
+            margin-bottom: 12px;
+        }
+
+
+        /* ==================================================
+           EVENTO
+           ================================================== */
+
+        .evento {
+
+            background: white;
+
+            border-radius: 16px;
+
+            margin-bottom: 16px;
+
+            padding: 18px;
+
+            box-shadow:
+                0 3px 10px
+                rgba(0, 0, 0, 0.10);
+        }
+
+
+        .evento-horario {
+
+            font-size: 28px;
+
+            font-weight: bold;
+
+            color: #1f4e79;
+
+            margin-bottom: 8px;
+        }
+
+
+        .evento-nome {
+
+            font-size: 23px;
+
+            font-weight: bold;
+
+            margin-bottom: 10px;
+        }
+
+
+        .evento-detalhe {
+
+            font-size: 18px;
+
+            color: #555;
+
+            margin-top: 10px;
+
+            word-break: break-word;
+        }
+
+
+        .evento-aviso {
+
+            margin-top: 14px;
+
+            padding-top: 12px;
+
+            border-top: 1px solid #eee;
+
+            font-size: 17px;
+
+            color: #666;
+        }
+
+
+        /* ==================================================
+           BOTÕES DO EVENTO
+           ================================================== */
+
+        .botoes-evento {
+
+            display: flex;
+
+            gap: 12px;
+
+            margin-top: 16px;
+        }
+
+
+        .botao-editar {
+
+            flex: 1;
+
+            background: #f0ad4e;
+
+            color: white;
+        }
+
+
+        .botao-excluir {
+
+            flex: 1;
+
+            background: #dc3545;
+
+            color: white;
+        }
+
+
+        /* ==================================================
+           FORMULÁRIO
+           ================================================== */
+
+        .formulario {
+
+            display: none;
+
+            background: white;
+
+            border-radius: 16px;
+
+            padding: 20px;
+
+            margin-bottom: 20px;
+
+            box-shadow:
+                0 3px 10px
+                rgba(0, 0, 0, 0.10);
+        }
+
+
+        .formulario h2 {
+
+            margin-top: 0;
+
+            color: #1f4e79;
+
+            text-align: center;
+        }
+
+
+        .campo {
+
+            margin-bottom: 16px;
+        }
+
+
+        .campo label {
+
+            display: block;
+
+            font-weight: bold;
+
+            margin-bottom: 6px;
+
+            font-size: 17px;
+        }
+
+
+        .campo input,
+        .campo textarea {
+
+            width: 100%;
+
+            padding: 13px;
+
+            border: 1px solid #ccc;
+
+            border-radius: 8px;
+
+            font-size: 17px;
+
+            font-family: Arial, sans-serif;
+        }
+
+
+        .campo textarea {
+
+            min-height: 90px;
+
+            resize: vertical;
+        }
+
+
+        .botoes-formulario {
+
+            display: flex;
+
+            gap: 10px;
+
+            margin-top: 20px;
+        }
+
+
+        .botao-salvar {
+
+            flex: 1;
+
+            background: #198754;
+
+            color: white;
+        }
+
+
+        .botao-cancelar {
+
+            flex: 1;
+
+            background: #6c757d;
+
+            color: white;
+        }
+
+
+        /* ==================================================
+           MENSAGENS
+           ================================================== */
+
+        .carregando {
+
+            text-align: center;
+
+            padding: 30px;
+
+            color: #666;
+
+            font-size: 18px;
+        }
+
+
+        .sem-eventos {
+
+            background: white;
+
+            border-radius: 12px;
+
+            padding: 25px;
+
+            text-align: center;
+
+            color: #666;
+
+            font-size: 18px;
+        }
+
+
+        .erro {
+
+            background: #ffe5e5;
+
+            color: #a00000;
+
+            border-radius: 10px;
+
+            padding: 15px;
+
+            text-align: center;
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+    <!-- ====================================================
+         CABEÇALHO
+         ==================================================== -->
+
+    <div class="cabecalho">
+
+        <h1>📅 Minha Agenda</h1>
+
+        <p>Compromissos</p>
+
+    </div>
+
+
+    <!-- ====================================================
+         CONTEÚDO
+         ==================================================== -->
+
+    <div class="conteudo">
+
+
+        <!-- =================================================
+             BOTÕES
+             ================================================= -->
+
+        <div class="botoes">
+
+            <button
+                class="botao-novo"
+                onclick="abrirNovo()"
+            >
+                ➕ Novo
+            </button>
+
+
+            <button
+                class="botao-atualizar"
+                onclick="carregarEventos()"
+            >
+                🔄 Atualizar
+            </button>
+
+        </div>
+
+
+        <!-- =================================================
+             FORMULÁRIO
+             ================================================= -->
+
+        <div
+            id="formulario"
+            class="formulario"
+        >
+
+            <h2 id="tituloFormulario">
+                Novo compromisso
+            </h2>
+
+
+            <input
+                type="hidden"
+                id="idEvento"
+            >
+
+
+            <div class="campo">
+
+                <label for="nome">
+                    Compromisso
+                </label>
+
+                <input
+                    type="text"
+                    id="nome"
+                    placeholder="Digite o compromisso"
+                >
+
+            </div>
+
+
+            <div class="campo">
+
+                <label for="data">
+                    Data
+                </label>
+
+                <input
+                    type="date"
+                    id="data"
+                >
+
+            </div>
+
+
+            <div class="campo">
+
+                <label for="horario">
+                    Horário
+                </label>
+
+                <input
+                    type="time"
+                    id="horario"
+                >
+
+            </div>
+
+
+            <div class="campo">
+
+                <label for="avisar_horas">
+                    Avisar quantas horas antes
+                </label>
+
+                <input
+                    type="number"
+                    id="avisar_horas"
+                    min="0"
+                    max="999"
+                    value="0"
+                >
+
+            </div>
+
+
+            <div class="campo">
+
+                <label for="detalhe">
+                    Detalhe
+                </label>
+
+                <textarea
+                    id="detalhe"
+                    placeholder="Telefone, endereço, link de reunião etc."
+                ></textarea>
+
+            </div>
+
+
+            <div class="botoes-formulario">
+
+                <button
+                    class="botao-salvar"
+                    onclick="salvarEvento()"
+                >
+                    💾 Salvar
+                </button>
+
+
+                <button
+                    class="botao-cancelar"
+                    onclick="fecharFormulario()"
+                >
+                    Cancelar
+                </button>
+
+            </div>
+
+        </div>
+
+
+        <!-- =================================================
+             LISTA DE EVENTOS
+             ================================================= -->
+
+        <div id="listaEventos">
+
+            <div class="carregando">
+                Carregando compromissos...
+            </div>
+
+        </div>
+
+
+    </div>
+
+
+    <!-- ====================================================
+         JAVASCRIPT
+         ==================================================== -->
+
+    <script>
+
+
+        /* ==================================================
+           SERVICE WORKER
+           ================================================== */
+
+        if ("serviceWorker" in navigator) {
+
+            window.addEventListener(
+                "load",
+                function () {
+
+                    navigator.serviceWorker
+                        .register(
+                            "/service-worker.js"
+                        )
+                        .then(
+                            function () {
+
+                                console.log(
+                                    "Service Worker registrado."
+                                );
+
+                            }
+                        )
+                        .catch(
+                            function (erro) {
+
+                                console.error(
+                                    "Erro ao registrar Service Worker:",
+                                    erro
+                                );
+
+                            }
+                        );
+
+                }
+            );
+
+        }
+
+
+        /* ==================================================
+           ABRIR NOVO
+           ================================================== */
+
+        function abrirNovo() {
+
+            document.getElementById(
+                "tituloFormulario"
+            ).textContent =
+                "Novo compromisso";
+
+
+            document.getElementById(
+                "idEvento"
+            ).value = "";
+
+
+            document.getElementById(
+                "nome"
+            ).value = "";
+
+
+            document.getElementById(
+                "data"
+            ).value = "";
+
+
+            document.getElementById(
+                "horario"
+            ).value = "";
+
+
+            document.getElementById(
+                "avisar_horas"
+            ).value = 0;
+
+
+            document.getElementById(
+                "detalhe"
+            ).value = "";
+
+
+            document.getElementById(
+                "formulario"
+            ).style.display = "block";
+
+
+            window.scrollTo({
+                top: 0,
+                behavior: "smooth"
+            });
+
+        }
+
+
+        /* ==================================================
+           FECHAR FORMULÁRIO
+           ================================================== */
+
+        function fecharFormulario() {
+
+            document.getElementById(
+                "formulario"
+            ).style.display = "none";
+
+        }
+
+
+        /* ==================================================
+           FORMATAR DATA
+           ================================================== */
+
+        function formatarData(data) {
+
+            if (!data) {
+
+                return "";
+
+            }
+
+
+            if (data.includes("-")) {
+
+                const partes =
+                    data.split("-");
+
+
+                if (partes.length === 3) {
+
+                    return (
+                        partes[2] +
+                        "/" +
+                        partes[1] +
+                        "/" +
+                        partes[0]
+                    );
+
+                }
+
+            }
+
+
+            return data;
+
+        }
+
+
+        /* ==================================================
+           CONVERTER DATA PARA INPUT
+           ================================================== */
+
+        function dataParaInput(data) {
+
+            if (!data) {
+
+                return "";
+
+            }
+
+
+            if (data.includes("-")) {
+
+                return data;
+
+            }
+
+
+            const partes =
+                data.split("/");
+
+
+            if (partes.length === 3) {
+
+                return (
+                    partes[2] +
+                    "-" +
+                    partes[1] +
+                    "-" +
+                    partes[0]
+                );
+
+            }
+
+
+            return "";
+
+        }
+
+
+        /* ==================================================
+           CONVERTER DATA PARA API
+           ================================================== */
+
+        function dataParaAPI(data) {
+
+            if (!data) {
+
+                return "";
+
+            }
+
+
+            if (data.includes("/")) {
+
+                return data;
+
+            }
+
+
+            const partes =
+                data.split("-");
+
+
+            if (partes.length === 3) {
+
+                return (
+                    partes[2] +
+                    "/" +
+                    partes[1] +
+                    "/" +
+                    partes[0]
+                );
+
+            }
+
+
+            return data;
+
+        }
+
+
+        /* ==================================================
+           CARREGAR EVENTOS
+           ================================================== */
+
+        async function carregarEventos() {
+
+            const lista =
+                document.getElementById(
+                    "listaEventos"
+                );
+
+
+            lista.innerHTML =
+                '<div class="carregando">' +
+                'Carregando compromissos...' +
+                '</div>';
+
+
+            try {
+
+                const resposta =
+                    await fetch(
+                        "/api/eventos"
+                    );
+
+
+                if (!resposta.ok) {
+
+                    throw new Error(
+                        "Erro ao consultar Agenda."
+                    );
+
+                }
+
+
+                const eventos =
+                    await resposta.json();
+
+
+                mostrarEventos(eventos);
+
+            }
+
+            catch (erro) {
+
+                console.error(erro);
+
+
+                lista.innerHTML = `
+                    <div class="erro">
+                        Não foi possível carregar a Agenda.
+                        <br><br>
+                        Verifique se a API está funcionando.
+                    </div>
+                `;
+
+            }
+
+        }
+
+
+        /* ==================================================
+           MOSTRAR EVENTOS
+           ================================================== */
+
+        function mostrarEventos(eventos) {
+
+            const lista =
+                document.getElementById(
+                    "listaEventos"
+                );
+
+
+            if (
+                !eventos ||
+                eventos.length === 0
+            ) {
+
+                lista.innerHTML = `
+                    <div class="sem-eventos">
+                        Nenhum compromisso cadastrado.
+                    </div>
+                `;
+
+                return;
+
+            }
+
+
+            const grupos = {};
+
+
+            eventos.forEach(
+                function (evento) {
+
+                    const data =
+                        evento.data ||
+                        "Sem data";
+
+
+                    if (!grupos[data]) {
+
+                        grupos[data] = [];
+
+                    }
+
+
+                    grupos[data].push(
+                        evento
+                    );
+
+                }
+            );
+
+
+            let html = "";
+
+
+            Object.keys(grupos).forEach(
+                function (data) {
+
+                    html += `
+                        <div class="data-grupo">
+
+                            <div class="data-titulo">
+                                📅 ${formatarData(data)}
+                            </div>
+                    `;
+
+
+                    grupos[data].forEach(
+                        function (evento) {
+
+                            const horario =
+                                evento.horario ||
+                                "Sem horário";
+
+
+                            const nome =
+                                evento.nome ||
+                                "Sem título";
+
+
+                            const detalhe =
+                                evento.detalhe ||
+                                "";
+
+
+                            let aviso = "";
+
+
+                            if (
+                                evento.avisar_horas !==
+                                undefined &&
+                                evento.avisar_horas !==
+                                null
+                            ) {
+
+                                const horas =
+                                    Number(
+                                        evento.avisar_horas
+                                    );
+
+
+                                if (horas > 0) {
+
+                                    aviso =
+                                        "🔔 Avisar " +
+                                        horas +
+                                        " hora" +
+                                        (
+                                            horas === 1
+                                            ? ""
+                                            : "s"
+                                        ) +
+                                        " antes";
+
+                                }
+
+                            }
+
+
+                            html += `
+
+                                <div class="evento">
+
+                                    <div class="evento-horario">
+                                        🕐 ${horario}
+                                    </div>
+
+                                    <div class="evento-nome">
+                                        ${nome}
+                                    </div>
+
+                                    ${
+                                        detalhe
+                                        ?
+                                        `
+                                        <div class="evento-detalhe">
+                                            📌 ${detalhe}
+                                        </div>
+                                        `
+                                        :
+                                        ""
+                                    }
+
+                                    ${
+                                        aviso
+                                        ?
+                                        `
+                                        <div class="evento-aviso">
+                                            ${aviso}
+                                        </div>
+                                        `
+                                        :
+                                        ""
+                                    }
+
+                                    <div class="botoes-evento">
+
+                                        <button
+                                            class="botao-editar"
+                                            onclick="editarEvento(${evento.id})"
+                                        >
+                                            ✏️ Editar
+                                        </button>
+
+                                        <button
+                                            class="botao-excluir"
+                                            onclick="excluirEvento(${evento.id})"
+                                        >
+                                            🗑️ Excluir
+                                        </button>
+
+                                    </div>
+
+                                </div>
+
+                            `;
+
+                        }
+                    );
+
+
+                    html += `
+                        </div>
+                    `;
+
+                }
+            );
+
+
+            lista.innerHTML = html;
+
+        }
+
+
+        /* ==================================================
+           SALVAR EVENTO
+           ================================================== */
+
+        async function salvarEvento() {
+
+            const id =
+                document.getElementById(
+                    "idEvento"
+                ).value;
+
+
+            const nome =
+                document.getElementById(
+                    "nome"
+                ).value.trim();
+
+
+            const data =
+                document.getElementById(
+                    "data"
+                ).value;
+
+
+            const horario =
+                document.getElementById(
+                    "horario"
+                ).value;
+
+
+            const avisar_horas =
+                document.getElementById(
+                    "avisar_horas"
+                ).value;
+
+
+            const detalhe =
+                document.getElementById(
+                    "detalhe"
+                ).value.trim();
+
+
+            if (!nome) {
+
+                alert(
+                    "Digite o compromisso."
+                );
+
+                return;
+
+            }
+
+
+            if (!data) {
+
+                alert(
+                    "Informe a data."
+                );
+
+                return;
+
+            }
+
+
+            if (!horario) {
+
+                alert(
+                    "Informe o horário."
+                );
+
+                return;
+
+            }
+
+
+            const dados = {
+
+                tipo: "Compromisso",
+
+                nome: nome,
+
+                data: dataParaAPI(data),
+
+                horario: horario,
+
+                avisar_horas:
+                    Number(
+                        avisar_horas || 0
+                    ),
+
+                detalhe: detalhe,
+
+                recorrente: 0,
+
+                avisar_dias: 0,
+
+                horario_aviso: null,
+
+                aviso_no_dia: 1
+
+            };
+
+
+            try {
+
+                let resposta;
+
+
+                if (id) {
+
+                    resposta =
+                        await fetch(
+                            "/api/eventos/" + id,
+                            {
+                                method: "PUT",
+
+                                headers: {
+                                    "Content-Type":
+                                        "application/json"
+                                },
+
+                                body:
+                                    JSON.stringify(
+                                        dados
+                                    )
+                            }
+                        );
+
+                }
+
+                else {
+
+                    resposta =
+                        await fetch(
+                            "/api/eventos",
+                            {
+                                method: "POST",
+
+                                headers: {
+                                    "Content-Type":
+                                        "application/json"
+                                },
+
+                                body:
+                                    JSON.stringify(
+                                        dados
+                                    )
+                            }
+                        );
+
+                }
+
+
+                const resultado =
+                    await resposta.json();
+
+
+                if (!resposta.ok) {
+
+                    throw new Error(
+                        resultado.erro ||
+                        "Erro ao salvar."
+                    );
+
+                }
+
+
+                fecharFormulario();
+
+                carregarEventos();
+
+            }
+
+            catch (erro) {
+
+                alert(
+                    "Erro: " +
+                    erro.message
+                );
+
+            }
+
+        }
+
+
+        /* ==================================================
+           EDITAR EVENTO
+           ================================================== */
+
+        async function editarEvento(id) {
+
+            try {
+
+                const resposta =
+                    await fetch(
+                        "/api/eventos/" + id
+                    );
+
+
+                if (!resposta.ok) {
+
+                    throw new Error(
+                        "Evento não encontrado."
+                    );
+
+                }
+
+
+                const evento =
+                    await resposta.json();
+
+
+                document.getElementById(
+                    "tituloFormulario"
+                ).textContent =
+                    "Editar compromisso";
+
+
+                document.getElementById(
+                    "idEvento"
+                ).value =
+                    evento.id;
+
+
+                document.getElementById(
+                    "nome"
+                ).value =
+                    evento.nome || "";
+
+
+                document.getElementById(
+                    "data"
+                ).value =
+                    dataParaInput(
+                        evento.data
+                    );
+
+
+                document.getElementById(
+                    "horario"
+                ).value =
+                    evento.horario || "";
+
+
+                document.getElementById(
+                    "avisar_horas"
+                ).value =
+                    evento.avisar_horas || 0;
+
+
+                document.getElementById(
+                    "detalhe"
+                ).value =
+                    evento.detalhe || "";
+
+
+                document.getElementById(
+                    "formulario"
+                ).style.display =
+                    "block";
+
+
+                window.scrollTo({
+                    top: 0,
+                    behavior: "smooth"
+                });
+
+            }
+
+            catch (erro) {
+
+                alert(
+                    "Erro: " +
+                    erro.message
+                );
+
+            }
+
+        }
+
+
+        /* ==================================================
+           EXCLUIR EVENTO
+           ================================================== */
+
+        async function excluirEvento(id) {
+
+            const confirmar =
+                confirm(
+                    "Tem certeza que deseja excluir este compromisso?"
+                );
+
+
+            if (!confirmar) {
+
+                return;
+
+            }
+
+
+            try {
+
+                const resposta =
+                    await fetch(
+                        "/api/eventos/" + id,
+                        {
+                            method: "DELETE"
+                        }
+                    );
+
+
+                const resultado =
+                    await resposta.json();
+
+
+                if (!resposta.ok) {
+
+                    throw new Error(
+                        resultado.erro ||
+                        "Erro ao excluir."
+                    );
+
+                }
+
+
+                carregarEventos();
+
+            }
+
+            catch (erro) {
+
+                alert(
+                    "Erro: " +
+                    erro.message
+                );
+
+            }
+
+        }
+
+
+        /* ==================================================
+           INICIAR
+           ================================================== */
+
+        carregarEventos();
+
+
+    </script>
+
+
+</body>
+
+</html>

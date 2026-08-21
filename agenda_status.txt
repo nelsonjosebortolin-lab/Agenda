@@ -1,0 +1,74 @@
+PROJETO AGENDA — ARQUIVO MESTRE DE STATUS
+Atualizado em: 21/08/2026
+
+OBJETIVO
+Criar uma agenda que funcione no computador e também no celular Android, com compromissos, datas, horários, antecedência do aviso e detalhe (telefone, endereço ou link), permitindo avisos nos dois dispositivos.
+
+ESTRUTURA ATUAL
+Agenda/
+├── .venv/
+├── __pycache__/
+├── agenda_core.py
+├── agenda.db
+├── app.py
+├── app(1).py
+├── api.py
+├── teste_core.py
+└── teste_tray.py
+
+CONCLUÍDO
+1. Agenda do Windows funcionando.
+2. agenda.db preservado.
+3. agenda_core.py criado e testado.
+4. teste_core.py executado com sucesso; encontrou 15 eventos no banco.
+5. app.py integrado ao agenda_core.py e funcionando.
+6. app(1).py mantido como cópia da versão anterior funcional.
+7. api.py criado para comunicação com o futuro Android.
+8. Flask instalado no .venv.
+9. api.py executado com sucesso.
+10. API funcionando no computador em http://127.0.0.1:5000
+11. API disponível na rede local em http://192.168.0.178:5000
+12. No computador, http://192.168.0.178:5000/api/status retornou {"mensagem":"Agenda funcionando","ok":true}.
+
+TESTE NO CELULAR
+O celular tentou acessar:
+http://192.168.0.178:5000/api/status
+
+Resultado:
+ERR_CONNECTION_ABORTED
+
+CONCLUSÃO
+A API funciona no computador. O problema atual é a comunicação do celular com a porta 5000 do computador, provavelmente relacionada ao Firewall/rede local. Não há indicação, até aqui, de defeito no código da API.
+
+PONTO EXATO ONDE PARAMOS
+Estamos no Assistente para Nova Regra de Entrada do Windows Defender Firewall.
+
+Já configurado:
+- Tipo: Porta
+- Protocolo: TCP
+- Porta local específica: 5000
+- Ação: Permitir a conexão
+- Perfis: Domínio, Particular e Público
+
+A tela atual é a última tela do assistente, chamada “Nome”.
+
+PRÓXIMO PASSO — RETOMAR EXATAMENTE AQUI
+1. No campo Nome, digitar: Agenda API 5000
+2. Deixar a descrição vazia.
+3. Clicar em Concluir.
+4. Voltar ao celular.
+5. Testar: http://192.168.0.178:5000/api/status
+6. Se funcionar, deverá aparecer: {"mensagem":"Agenda funcionando","ok":true}
+
+IMPORTANTE
+- Não recriar agenda_core.py.
+- Não recriar teste_core.py.
+- Não substituir agenda.db.
+- Não mexer no app(1).py.
+- Não voltar etapas já concluídas sem um teste indicar necessidade.
+- O objetivo imediato é fazer o celular acessar a API do computador.
+- Depois disso, continuar a construção do aplicativo Android.
+
+ARQUIVOS DE SEGURANÇA
+app(1).py = versão anterior funcional do aplicativo Windows.
+agenda.db = banco atual com os eventos existentes.
