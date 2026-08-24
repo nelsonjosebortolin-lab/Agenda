@@ -1,3 +1,6 @@
+# agenda_mobile.html
+
+```html
 <!DOCTYPE html>
 <html lang="pt-BR">
 
@@ -9,10 +12,6 @@
         name="viewport"
         content="width=device-width, initial-scale=1.0"
     >
-
-    <!-- =====================================================
-         MANIFESTO DO APLICATIVO
-         ===================================================== -->
 
     <link
         rel="manifest"
@@ -57,10 +56,6 @@
         }
 
 
-        /* ==================================================
-           CABEÇALHO
-           ================================================== */
-
         .cabecalho {
 
             background: #1f4e79;
@@ -91,10 +86,6 @@
         }
 
 
-        /* ==================================================
-           CONTEÚDO
-           ================================================== */
-
         .conteudo {
 
             max-width: 700px;
@@ -104,10 +95,6 @@
             padding: 18px;
         }
 
-
-        /* ==================================================
-           BOTÕES PRINCIPAIS
-           ================================================== */
 
         .botoes {
 
@@ -155,21 +142,17 @@
         }
 
 
-        .botao-novo:active {
+        .botao-notificacao {
 
-            background: #146c43;
+            width: 100%;
+
+            background: #6f42c1;
+
+            color: white;
+
+            margin-bottom: 20px;
         }
 
-
-        .botao-atualizar:active {
-
-            background: #163a5c;
-        }
-
-
-        /* ==================================================
-           DATAS
-           ================================================== */
 
         .data-grupo {
 
@@ -188,10 +171,6 @@
             margin-bottom: 12px;
         }
 
-
-        /* ==================================================
-           EVENTO
-           ================================================== */
 
         .evento {
 
@@ -257,10 +236,6 @@
         }
 
 
-        /* ==================================================
-           BOTÕES DO EVENTO
-           ================================================== */
-
         .botoes-evento {
 
             display: flex;
@@ -290,10 +265,6 @@
             color: white;
         }
 
-
-        /* ==================================================
-           FORMULÁRIO
-           ================================================== */
 
         .formulario {
 
@@ -396,10 +367,6 @@
         }
 
 
-        /* ==================================================
-           MENSAGENS
-           ================================================== */
-
         .carregando {
 
             text-align: center;
@@ -449,10 +416,6 @@
 <body>
 
 
-    <!-- ====================================================
-         CABEÇALHO
-         ==================================================== -->
-
     <div class="cabecalho">
 
         <h1>📅 Minha Agenda</h1>
@@ -462,16 +425,8 @@
     </div>
 
 
-    <!-- ====================================================
-         CONTEÚDO
-         ==================================================== -->
-
     <div class="conteudo">
 
-
-        <!-- =================================================
-             BOTÕES
-             ================================================= -->
 
         <div class="botoes">
 
@@ -493,9 +448,13 @@
         </div>
 
 
-        <!-- =================================================
-             FORMULÁRIO
-             ================================================= -->
+        <button
+            class="botao-notificacao"
+            onclick="testarNotificacao()"
+        >
+            🔔 Testar notificação
+        </button>
+
 
         <div
             id="formulario"
@@ -609,10 +568,6 @@
         </div>
 
 
-        <!-- =================================================
-             LISTA DE EVENTOS
-             ================================================= -->
-
         <div id="listaEventos">
 
             <div class="carregando">
@@ -624,10 +579,6 @@
 
     </div>
 
-
-    <!-- ====================================================
-         JAVASCRIPT
-         ==================================================== -->
 
     <script>
 
@@ -669,6 +620,308 @@
                 }
             );
 
+        }
+
+
+        /* ==================================================
+           NOTIFICAÇÕES
+           ================================================== */
+
+        async function obterPermissaoNotificacao() {
+
+            if (!("Notification" in window)) {
+
+                alert(
+                    "Este navegador não oferece suporte a notificações."
+                );
+
+                return false;
+            }
+
+
+            if (Notification.permission === "granted") {
+
+                return true;
+            }
+
+
+            if (Notification.permission === "denied") {
+
+                alert(
+                    "As notificações estão bloqueadas para esta Agenda. "
+                    +
+                    "É preciso permitir notificações nas configurações do navegador."
+                );
+
+                return false;
+            }
+
+
+            const permissao =
+                await Notification.requestPermission();
+
+
+            if (permissao !== "granted") {
+
+                alert(
+                    "A permissão para notificações não foi concedida."
+                );
+
+                return false;
+            }
+
+
+            return true;
+        }
+
+
+        async function mostrarNotificacao(
+            titulo,
+            mensagem
+        ) {
+
+            const permitida =
+                await obterPermissaoNotificacao();
+
+
+            if (!permitida) {
+
+                return false;
+            }
+
+
+            try {
+
+                if ("serviceWorker" in navigator) {
+
+                    const registro =
+                        await navigator.serviceWorker.ready;
+
+
+                    await registro.showNotification(
+                        titulo,
+                        {
+                            body: mensagem,
+                            icon: "/icons/icon-192.png",
+                            badge: "/icons/icon-192.png",
+                            tag: "agenda-" + Date.now(),
+                            requireInteraction: true
+                        }
+                    );
+
+
+                    return true;
+                }
+
+
+                new Notification(
+                    titulo,
+                    {
+                        body: mensagem
+                    }
+                );
+
+
+                return true;
+
+            }
+
+            catch (erro) {
+
+                console.error(
+                    "Erro ao mostrar notificação:",
+                    erro
+                );
+
+
+                alert(
+                    "Não foi possível mostrar a notificação."
+                );
+
+
+                return false;
+            }
+        }
+
+
+        async function testarNotificacao() {
+
+            await mostrarNotificacao(
+                "Minha Agenda",
+                "🔔 Esta é uma notificação de teste da Agenda."
+            );
+        }
+
+
+        /* ==================================================
+           VERIFICAR LEMBRETES
+           ================================================== */
+
+        async function verificarLembretesWeb() {
+
+            try {
+
+                const resposta =
+                    await fetch(
+                        "/api/eventos"
+                    );
+
+
+                if (!resposta.ok) {
+
+                    return;
+                }
+
+
+                const eventos =
+                    await resposta.json();
+
+
+                const agora =
+                    new Date();
+
+
+                eventos.forEach(
+                    async function (evento) {
+
+                        if (
+                            !evento.data ||
+                            !evento.horario
+                        ) {
+
+                            return;
+                        }
+
+
+                        const partesData =
+                            evento.data.split("/");
+
+
+                        if (
+                            partesData.length !== 3
+                        ) {
+
+                            return;
+                        }
+
+
+                        const dataEvento =
+                            new Date(
+                                Number(partesData[2]),
+                                Number(partesData[1]) - 1,
+                                Number(partesData[0]),
+                                Number(
+                                    evento.horario.split(":")[0]
+                                ),
+                                Number(
+                                    evento.horario.split(":")[1]
+                                ),
+                                0
+                            );
+
+
+                        const horas =
+                            Number(
+                                evento.avisar_horas || 0
+                            );
+
+
+                        const momentoAviso =
+                            new Date(
+                                dataEvento.getTime()
+                                -
+                                horas * 60 * 60 * 1000
+                            );
+
+
+                        const diferenca =
+                            agora.getTime()
+                            -
+                            momentoAviso.getTime();
+
+
+                        if (
+                            diferenca >= 0 &&
+                            diferenca < 60000
+                        ) {
+
+                            const chave =
+                                "agenda-aviso-" +
+                                evento.id +
+                                "-" +
+                                dataEvento.getTime();
+
+
+                            if (
+                                localStorage.getItem(
+                                    chave
+                                )
+                            ) {
+
+                                return;
+                            }
+
+
+                            const mensagem =
+                                evento.nome +
+                                "\n" +
+                                "Data: " +
+                                formatarData(
+                                    evento.data
+                                ) +
+                                "\n" +
+                                "Horário: " +
+                                evento.horario +
+                                (
+                                    evento.detalhe
+                                    ?
+                                    "\n\nDetalhe:\n" +
+                                    evento.detalhe
+                                    :
+                                    ""
+                                );
+
+
+                            const mostrou =
+                                await mostrarNotificacao(
+                                    "Lembrete de compromisso",
+                                    mensagem
+                                );
+
+
+                            if (mostrou) {
+
+                                localStorage.setItem(
+                                    chave,
+                                    "1"
+                                );
+                            }
+                        }
+
+                    }
+                );
+
+            }
+
+            catch (erro) {
+
+                console.error(
+                    "Erro ao verificar lembretes:",
+                    erro
+                );
+            }
+        }
+
+
+        function iniciarVerificacaoLembretes() {
+
+            verificarLembretesWeb();
+
+
+            setInterval(
+                verificarLembretesWeb,
+                30000
+            );
         }
 
 
@@ -749,7 +1002,6 @@
             if (!data) {
 
                 return "";
-
             }
 
 
@@ -768,14 +1020,11 @@
                         "/" +
                         partes[0]
                     );
-
                 }
-
             }
 
 
             return data;
-
         }
 
 
@@ -788,14 +1037,12 @@
             if (!data) {
 
                 return "";
-
             }
 
 
             if (data.includes("-")) {
 
                 return data;
-
             }
 
 
@@ -812,12 +1059,10 @@
                     "-" +
                     partes[0]
                 );
-
             }
 
 
             return "";
-
         }
 
 
@@ -830,14 +1075,12 @@
             if (!data) {
 
                 return "";
-
             }
 
 
             if (data.includes("/")) {
 
                 return data;
-
             }
 
 
@@ -854,12 +1097,10 @@
                     "/" +
                     partes[0]
                 );
-
             }
 
 
             return data;
-
         }
 
 
@@ -894,7 +1135,6 @@
                     throw new Error(
                         "Erro ao consultar Agenda."
                     );
-
                 }
 
 
@@ -918,9 +1158,7 @@
                         Verifique se a API está funcionando.
                     </div>
                 `;
-
             }
-
         }
 
 
@@ -948,7 +1186,6 @@
                 `;
 
                 return;
-
             }
 
 
@@ -966,14 +1203,12 @@
                     if (!grupos[data]) {
 
                         grupos[data] = [];
-
                     }
 
 
                     grupos[data].push(
                         evento
                     );
-
                 }
             );
 
@@ -1039,9 +1274,7 @@
                                             : "s"
                                         ) +
                                         " antes";
-
                                 }
-
                             }
 
 
@@ -1102,7 +1335,6 @@
                                 </div>
 
                             `;
-
                         }
                     );
 
@@ -1110,13 +1342,11 @@
                     html += `
                         </div>
                     `;
-
                 }
             );
 
 
             lista.innerHTML = html;
-
         }
 
 
@@ -1169,7 +1399,6 @@
                 );
 
                 return;
-
             }
 
 
@@ -1180,7 +1409,6 @@
                 );
 
                 return;
-
             }
 
 
@@ -1191,7 +1419,6 @@
                 );
 
                 return;
-
             }
 
 
@@ -1219,7 +1446,6 @@
                 horario_aviso: null,
 
                 aviso_no_dia: 1
-
             };
 
 
@@ -1269,7 +1495,6 @@
                                     )
                             }
                         );
-
                 }
 
 
@@ -1283,7 +1508,6 @@
                         resultado.erro ||
                         "Erro ao salvar."
                     );
-
                 }
 
 
@@ -1299,9 +1523,7 @@
                     "Erro: " +
                     erro.message
                 );
-
             }
-
         }
 
 
@@ -1324,7 +1546,6 @@
                     throw new Error(
                         "Evento não encontrado."
                     );
-
                 }
 
 
@@ -1395,9 +1616,7 @@
                     "Erro: " +
                     erro.message
                 );
-
             }
-
         }
 
 
@@ -1416,7 +1635,6 @@
             if (!confirmar) {
 
                 return;
-
             }
 
 
@@ -1441,7 +1659,6 @@
                         resultado.erro ||
                         "Erro ao excluir."
                     );
-
                 }
 
 
@@ -1455,9 +1672,7 @@
                     "Erro: " +
                     erro.message
                 );
-
             }
-
         }
 
 
@@ -1467,6 +1682,7 @@
 
         carregarEventos();
 
+        iniciarVerificacaoLembretes();
 
     </script>
 
@@ -1474,3 +1690,4 @@
 </body>
 
 </html>
+```
