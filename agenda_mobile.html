@@ -626,7 +626,119 @@
         /* ==================================================
            NOTIFICAÇÕES
            ================================================== */
+        /* ==================================================
+           REGISTRAR INSCRIÇÃO DE PUSH NO SERVIDOR
+           ================================================== */
 
+        async function registrarInscricaoPush() {
+
+            try {
+
+                if (!("serviceWorker" in navigator)) {
+
+                    console.log(
+                        "Service Worker não disponível."
+                    );
+
+                    return;
+                }
+
+
+                const registro =
+                    await navigator.serviceWorker.ready;
+
+
+                if (!("PushManager" in window)) {
+
+                    console.log(
+                        "Push API não disponível neste navegador."
+                    );
+
+                    return;
+                }
+
+
+                let inscricao =
+                    await registro.pushManager.getSubscription();
+
+
+                if (!inscricao) {
+
+                    try {
+
+                        inscricao =
+                            await registro.pushManager.subscribe({
+                                userVisibleOnly: true
+                            });
+
+                    }
+
+                    catch (erro) {
+
+                        console.error(
+                            "Não foi possível criar inscrição Push:",
+                            erro
+                        );
+
+                        return;
+                    }
+                }
+
+
+                const dados =
+                    inscricao.toJSON();
+
+
+                const resposta =
+                    await fetch(
+                        "/api/push/inscricao",
+                        {
+                            method: "POST",
+
+                            headers: {
+                                "Content-Type":
+                                    "application/json"
+                            },
+
+                            body:
+                                JSON.stringify(
+                                    dados
+                                )
+                        }
+                    );
+
+
+                const resultado =
+                    await resposta.json();
+
+
+                if (resposta.ok) {
+
+                    console.log(
+                        "Inscrição Push registrada no servidor.",
+                        resultado
+                    );
+
+                }
+
+                else {
+
+                    console.error(
+                        "Erro ao registrar inscrição Push:",
+                        resultado
+                    );
+                }
+
+            }
+
+            catch (erro) {
+
+                console.error(
+                    "Erro na inscrição Push:",
+                    erro
+                );
+            }
+        }
         async function obterPermissaoNotificacao() {
 
             if (!("Notification" in window)) {
@@ -685,7 +797,6 @@
 
 
             if (!permitida) {
-
                 return false;
             }
 
@@ -700,40 +811,48 @@
                 }
 
 
+                /*
+                Nesta versão, a Agenda usa diretamente o
+                Service Worker para criar a notificação.
+
+                Não usamos postMessage nem MessageChannel.
+                Isso elimina a etapa de comunicação que estava
+                causando o erro anterior.
+                */
+
                 const registro =
                     await navigator.serviceWorker.ready;
 
 
-                if (!registro.active) {
+                await registro.showNotification(
+                    titulo,
+                    {
+                        body: mensagem,
 
-                    throw new Error(
-                        "O Service Worker ainda não está ativo."
-                    );
-                }
+                        icon:
+                            "/icons/icon-192.png",
 
-
-                registro.active.postMessage({
-
-                    tipo: "NOTIFICAR",
-
-                    dados: {
-
-                        titulo:
-                            titulo,
-
-                        mensagem:
-                            mensagem,
+                        badge:
+                            "/icons/icon-192.png",
 
                         tag:
                             "agenda-" +
                             Date.now(),
 
-                        url:
-                            "/agenda_mobile.html"
+                        requireInteraction:
+                            true,
 
+                        data: {
+                            url:
+                                "/agenda_mobile.html"
+                        }
                     }
+                );
 
-                });
+
+                console.log(
+                    "Notificação criada diretamente pelo Service Worker."
+                );
 
 
                 return true;
@@ -743,13 +862,13 @@
             catch (erro) {
 
                 console.error(
-                    "Erro ao enviar notificação ao Service Worker:",
+                    "Erro ao mostrar notificação:",
                     erro
                 );
 
 
                 alert(
-                    "Erro ao enviar notificação:\n\n" +
+                    "Erro ao mostrar notificação:\n\n" +
                     erro.message
                 );
 
@@ -1709,6 +1828,8 @@
         carregarEventos();
 
         iniciarVerificacaoLembretes();
+
+        registrarInscricaoPush();
 
     </script>
 
