@@ -1,126 +1,57 @@
-const CACHE_NAME = "agenda-cache-v4";
+// ========================================================
+// SERVICE WORKER — MINHA AGENDA
+// ========================================================
 
-const ARQUIVOS = [
-    "/",
-    "/index.html",
-    "/agenda_mobile.html",
-    "/manifest.json",
-    "/icons/icon-192.png",
-    "/icons/icon-512.png"
-];
+console.log("Service Worker carregado.");
 
-self.addEventListener("install", (event) => {
+// ========================================================
+// INSTALAÇÃO
+// ========================================================
+
+self.addEventListener("install", function (event) {
+
     console.log("Service Worker: instalando...");
 
-    event.waitUntil(
-        caches.open(CACHE_NAME)
-            .then((cache) => {
-                return cache.addAll(ARQUIVOS);
-            })
-            .then(() => {
-                return self.skipWaiting();
-            })
-    );
+    // Ativa imediatamente a nova versão.
+    self.skipWaiting();
+
 });
 
-self.addEventListener("activate", (event) => {
-    console.log("Service Worker: ativando...");
+
+// ========================================================
+// ATIVAÇÃO
+// ========================================================
+
+self.addEventListener("activate", function (event) {
+
+    console.log("Service Worker: ativado.");
 
     event.waitUntil(
-        caches.keys()
-            .then((nomesCaches) => {
-                return Promise.all(
-                    nomesCaches
-                        .filter((nome) => nome !== CACHE_NAME)
-                        .map((nome) => caches.delete(nome))
-                );
-            })
-            .then(() => {
-                return self.clients.claim();
-            })
+        self.clients.claim()
     );
+
 });
 
-self.addEventListener("fetch", (event) => {
-    const request = event.request;
 
-    if (request.method !== "GET") {
-        return;
-    }
+// ========================================================
+// REQUISIÇÕES
+// ========================================================
 
+self.addEventListener("fetch", function (event) {
+
+    // Deixa o navegador buscar normalmente.
     event.respondWith(
-        caches.match(request)
-            .then((respostaCache) => {
-                if (respostaCache) {
-                    return respostaCache;
-                }
-
-                return fetch(request)
-                    .then((respostaRede) => {
-
-                        if (
-                            !respostaRede ||
-                            respostaRede.status !== 200 ||
-                            respostaRede.type === "opaque"
-                        ) {
-                            return respostaRede;
-                        }
-
-                        const respostaParaCache = respostaRede.clone();
-
-                        caches.open(CACHE_NAME)
-                            .then((cache) => {
-                                cache.put(request, respostaParaCache);
-                            });
-
-                        return respostaRede;
-                    })
-                    .catch(() => {
-                        return caches.match("/agenda_mobile.html");
-                    });
-            })
+        fetch(event.request)
     );
+
 });
 
 
-/*
-========================================================
-NOTIFICAÇÕES
-========================================================
-*/
+// ========================================================
+// MENSAGENS RECEBIDAS DA AGENDA
+// ========================================================
 
-self.addEventListener("notificationclick", (event) => {
-    event.notification.close();
-
-    event.waitUntil(
-        clients.matchAll({
-            type: "window",
-            includeUncontrolled: true
-        })
-        .then((listaClientes) => {
-
-            for (const cliente of listaClientes) {
-
-                if ("focus" in cliente) {
-                    return cliente.focus();
-                }
-            }
-
-            if (clients.openWindow) {
-                return clients.openWindow("/agenda_mobile.html");
-            }
-        })
-    );
-});
-
-
-/*
-========================================================
-MENSAGENS RECEBIDAS DA AGENDA
-========================================================
-*/
-
-self.addEventListener("message", (event) => {
+self.addEventListener("message", function (event) {
 
     if (!event.data) {
         return;
@@ -130,11 +61,10 @@ self.addEventListener("message", (event) => {
         return;
     }
 
-    const dados =
-        event.data.dados || {};
+    const dados = event.data.dados || {};
 
     const titulo =
-        dados.titulo || "Agenda";
+        dados.titulo || "Minha Agenda";
 
     const opcoes = {
 
@@ -157,9 +87,11 @@ self.addEventListener("message", (event) => {
         requireInteraction: true,
 
         data: {
+
             url:
                 dados.url ||
                 "/agenda_mobile.html"
+
         }
 
     };
@@ -167,11 +99,127 @@ self.addEventListener("message", (event) => {
 
     event.waitUntil(
 
-        self.registration.showNotification(
-            titulo,
-            opcoes
-        )
+        self.registration
+            .showNotification(
+                titulo,
+                opcoes
+            )
+
+            .then(function () {
+
+                console.log(
+                    "Notificação mostrada com sucesso."
+                );
+
+                if (
+                    event.ports &&
+                    event.ports[0]
+                ) {
+
+                    event.ports[0].postMessage({
+
+                        ok: true
+
+                    });
+
+                }
+
+            })
+
+            .catch(function (erro) {
+
+                console.error(
+                    "Erro no showNotification:",
+                    erro
+                );
+
+                if (
+                    event.ports &&
+                    event.ports[0]
+                ) {
+
+                    event.ports[0].postMessage({
+
+                        ok: false,
+
+                        erro:
+                            erro.message ||
+                            String(erro)
+
+                    });
+
+                }
+
+            })
 
     );
 
 });
+
+
+// ========================================================
+// CLIQUE NA NOTIFICAÇÃO
+// ========================================================
+
+self.addEventListener(
+    "notificationclick",
+    function (event) {
+
+        event.notification.close();
+
+        const url =
+            event.notification.data &&
+            event.notification.data.url
+                ? event.notification.data.url
+                : "/agenda_mobile.html";
+
+
+        event.waitUntil(
+
+            self.clients
+                .matchAll({
+                    type: "window",
+                    includeUncontrolled: true
+                })
+
+                .then(function (clientes) {
+
+                    for (const cliente of clientes) {
+
+                        if ("focus" in cliente) {
+
+                            cliente.focus();
+
+                            if (
+                                "navigate" in cliente
+                            ) {
+
+                                return cliente.navigate(
+                                    url
+                                );
+
+                            }
+
+                            return;
+
+                        }
+
+                    }
+
+                    if (
+                        self.clients.openWindow
+                    ) {
+
+                        return self.clients.openWindow(
+                            url
+                        );
+
+                    }
+
+                })
+
+        );
+
+    }
+
+);
