@@ -1,6 +1,3 @@
-# agenda_mobile.html
-
-```html
 <!DOCTYPE html>
 <html lang="pt-BR">
 
@@ -598,10 +595,11 @@
                             "/service-worker.js"
                         )
                         .then(
-                            function () {
+                            function (registro) {
 
                                 console.log(
-                                    "Service Worker registrado."
+                                    "Service Worker registrado.",
+                                    registro
                                 );
 
                             }
@@ -692,37 +690,111 @@
 
             try {
 
-                if ("serviceWorker" in navigator) {
+                if (!("serviceWorker" in navigator)) {
 
-                    const registro =
-                        await navigator.serviceWorker.ready;
-
-
-                    await registro.showNotification(
-                        titulo,
-                        {
-                            body: mensagem,
-                            icon: "/icons/icon-192.png",
-                            badge: "/icons/icon-192.png",
-                            tag: "agenda-" + Date.now(),
-                            requireInteraction: true
-                        }
+                    throw new Error(
+                        "Este navegador não possui suporte a Service Worker."
                     );
-
-
-                    return true;
                 }
 
 
-                new Notification(
-                    titulo,
-                    {
-                        body: mensagem
+                const registro =
+                    await navigator.serviceWorker.ready;
+
+
+                if (!registro.active) {
+
+                    throw new Error(
+                        "O Service Worker ainda não está ativo."
+                    );
+                }
+
+
+                return await new Promise(
+                    function (resolve, reject) {
+
+                        const canal =
+                            new MessageChannel();
+
+
+                        const tempoLimite =
+                            setTimeout(
+                                function () {
+
+                                    reject(
+                                        new Error(
+                                            "O Service Worker não respondeu à solicitação de notificação."
+                                        )
+                                    );
+
+                                },
+                                5000
+                            );
+
+
+                        canal.port1.onmessage =
+                            function (evento) {
+
+                                clearTimeout(
+                                    tempoLimite
+                                );
+
+
+                                const resposta =
+                                    evento.data || {};
+
+
+                                if (resposta.ok) {
+
+                                    resolve(true);
+
+                                }
+
+                                else {
+
+                                    reject(
+                                        new Error(
+                                            resposta.erro ||
+                                            "O Service Worker não conseguiu mostrar a notificação."
+                                        )
+                                    );
+
+                                }
+
+                            };
+
+
+                        registro.active.postMessage(
+
+                            {
+                                tipo: "NOTIFICAR",
+
+                                dados: {
+
+                                    titulo:
+                                        titulo,
+
+                                    mensagem:
+                                        mensagem,
+
+                                    tag:
+                                        "agenda-" +
+                                        Date.now(),
+
+                                    url:
+                                        "/agenda_mobile.html"
+
+                                }
+                            },
+
+                            [
+                                canal.port2
+                            ]
+
+                        );
+
                     }
                 );
-
-
-                return true;
 
             }
 
@@ -735,7 +807,8 @@
 
 
                 alert(
-                    "Não foi possível mostrar a notificação."
+                    "Erro ao mostrar notificação:\n\n" +
+                    erro.message
                 );
 
 
@@ -746,10 +819,21 @@
 
         async function testarNotificacao() {
 
-            await mostrarNotificacao(
-                "Minha Agenda",
-                "🔔 Esta é uma notificação de teste da Agenda."
-            );
+            const mostrou =
+                await mostrarNotificacao(
+                    "Minha Agenda",
+                    "🔔 Esta é uma notificação de teste da Agenda."
+                );
+
+
+            if (mostrou) {
+
+                alert(
+                    "O pedido de notificação foi enviado ao Service Worker."
+                );
+
+            }
+
         }
 
 
@@ -1690,4 +1774,3 @@
 </body>
 
 </html>
-```
