@@ -1,3 +1,6 @@
+# agenda_mobile.html
+
+```html
 <!DOCTYPE html>
 <html lang="pt-BR">
 
@@ -595,11 +598,10 @@
                             "/service-worker.js"
                         )
                         .then(
-                            function (registro) {
+                            function () {
 
                                 console.log(
-                                    "Service Worker registrado.",
-                                    registro
+                                    "Service Worker registrado."
                                 );
 
                             }
@@ -710,104 +712,44 @@
                 }
 
 
-                return await new Promise(
-                    function (resolve, reject) {
+                registro.active.postMessage({
 
-                        const canal =
-                            new MessageChannel();
+                    tipo: "NOTIFICAR",
 
+                    dados: {
 
-                        const tempoLimite =
-                            setTimeout(
-                                function () {
+                        titulo:
+                            titulo,
 
-                                    reject(
-                                        new Error(
-                                            "O Service Worker não respondeu à solicitação de notificação."
-                                        )
-                                    );
+                        mensagem:
+                            mensagem,
 
-                                },
-                                5000
-                            );
+                        tag:
+                            "agenda-" +
+                            Date.now(),
 
-
-                        canal.port1.onmessage =
-                            function (evento) {
-
-                                clearTimeout(
-                                    tempoLimite
-                                );
-
-
-                                const resposta =
-                                    evento.data || {};
-
-
-                                if (resposta.ok) {
-
-                                    resolve(true);
-
-                                }
-
-                                else {
-
-                                    reject(
-                                        new Error(
-                                            resposta.erro ||
-                                            "O Service Worker não conseguiu mostrar a notificação."
-                                        )
-                                    );
-
-                                }
-
-                            };
-
-
-                        registro.active.postMessage(
-
-                            {
-                                tipo: "NOTIFICAR",
-
-                                dados: {
-
-                                    titulo:
-                                        titulo,
-
-                                    mensagem:
-                                        mensagem,
-
-                                    tag:
-                                        "agenda-" +
-                                        Date.now(),
-
-                                    url:
-                                        "/agenda_mobile.html"
-
-                                }
-                            },
-
-                            [
-                                canal.port2
-                            ]
-
-                        );
+                        url:
+                            "/agenda_mobile.html"
 
                     }
-                );
+
+                });
+
+
+                return true;
 
             }
 
             catch (erro) {
 
                 console.error(
-                    "Erro ao mostrar notificação:",
+                    "Erro ao enviar notificação ao Service Worker:",
                     erro
                 );
 
 
                 alert(
-                    "Erro ao mostrar notificação:\n\n" +
+                    "Erro ao enviar notificação:\n\n" +
                     erro.message
                 );
 
@@ -828,8 +770,8 @@
 
             if (mostrou) {
 
-                alert(
-                    "O pedido de notificação foi enviado ao Service Worker."
+                console.log(
+                    "Pedido de notificação enviado ao Service Worker."
                 );
 
             }
@@ -1774,3 +1716,4 @@
 </body>
 
 </html>
+```
