@@ -115,7 +115,87 @@ def service_worker():
 
 
 # ============================================================
+# WEB PUSH — BASE PARA NOTIFICAÇÕES NO CELULAR
+# ============================================================
+
+# Nesta primeira etapa, o servidor apenas recebe e guarda
+# a inscrição (subscription) fornecida pelo navegador.
+#
+# O envio real das notificações será acrescentado depois,
+# quando configurarmos as chaves VAPID e o mecanismo de
+# verificação dos lembretes.
+
+
+@app.route(
+    "/api/push/inscricao",
+    methods=["POST"]
+)
+def registrar_inscricao_push():
+
+    dados = request.get_json(
+        silent=True
+    )
+
+    if not dados:
+
+        return jsonify({
+            "erro": "Nenhum dado recebido"
+        }), 400
+
+    endpoint = dados.get(
+        "endpoint"
+    )
+
+    if not endpoint:
+
+        return jsonify({
+            "erro": "A inscrição não possui endpoint"
+        }), 400
+
+    try:
+
+        # Guardamos a inscrição em arquivo JSON por enquanto.
+        # Isso evita alterar o banco agenda.db nesta primeira etapa.
+        caminho = os.path.join(
+            PASTA_AGENDA,
+            "push_subscription.json"
+        )
+
+        with open(
+            caminho,
+            "w",
+            encoding="utf-8"
+        ) as arquivo:
+
+            import json
+
+            json.dump(
+                dados,
+                arquivo,
+                ensure_ascii=False,
+                indent=4
+            )
+
+    except Exception as erro:
+
+        return jsonify({
+            "erro": str(erro)
+        }), 500
+
+    return jsonify({
+
+        "ok": True,
+
+        "mensagem":
+            "Inscrição de notificações registrada."
+
+    })
+
+
+# ============================================================
 # TESTE DA API
+# ============================================================
+
 # ============================================================
 
 @app.route(
